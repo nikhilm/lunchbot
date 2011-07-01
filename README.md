@@ -54,6 +54,8 @@ NOTE: there is no way to undo this for now, so be careful.
 - rollover <password>
   requires a password so that only one responsible person can initiate day change.
 
+lunchbot does NOT handle time zones, it better be in the same room as everyone else.
+
 Installation
 ------------
 
