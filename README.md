@@ -12,10 +12,10 @@ How
 All commands require you to explicitly mention lunchbot at the beginning of the line,
 either as 'lunchbot:' or 'lunchbot'
 
-1) ask everyone in channel for lunch
+1) ask everyone in channel for lunch [IMPLEMENTED]
 - ask everyone
 
-2) ask ops for lunch (At mozilla, all current interns have ops)
+2) ask ops for lunch (At mozilla, all current interns have ops) [IMPLEMENTED]
 - ask ops
 
 3) express interest in lunch
@@ -25,7 +25,7 @@ either as 'lunchbot:' or 'lunchbot'
 once you do this you will be pinged for lunch regardless of you signing up for alarms
 or exclusion.
 
-4) create a lunch time and ping everyone interested at that time (this is pretty useless without options)
+4) create a lunch time and ping everyone interested at that time (this is pretty useless without options) [IMPLEMENTED]
 - lunch at HH:MM [+options] [message]
 eg. lunch at 12:30 at Le Boulanger
 
@@ -37,8 +37,8 @@ Options:
 5) view lunch times
 - lunches
 
-6) signup for a lunch time
-- signup for HH:MM
+6) signup for a lunch time [IMPLEMENTED]
+- signup HH:MM with <nick>
 
 You will be pinged 5 minutes before the time.
 

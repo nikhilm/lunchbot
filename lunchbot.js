@@ -22,7 +22,11 @@ LunchTime.prototype.add = function(by, message) {
     this._list.push({by: by, message: message, signups: []});
 }
 
-LunchTime.prototype.signup = function(with_) {
+LunchTime.prototype.signup = function(nick, with_) {
+    for (var i = 0; i < this._list.length; i++) {
+        if (this._list[i].by == with_)
+            this._list[i].signups.push(nick);
+    }
 }
 
 LunchTime.prototype.notify = function() {
@@ -99,6 +103,22 @@ lunches: function(command) {
         lunchesStr += lunchtime;
     }
     conn.privmsg(command.options.channel, lunchesStr);
+},
+
+signup: function(command) {
+    var args = command.unshifted();
+    var time = args[0];
+    var match = time.match(/^(0?[0-9]|1[0-9]|2[0-3]):(0[0-9]|[1-5][0-9])$/);
+    if (!match)
+        conn.privmsg(command.options.channel, sanitizeNick(command.options.nick) + ': invalid time');
+    if (!(args[1] == 'with'))
+        conn.privmsg(command.options.channel, sanitizeNick(command.options.nick) + ': invalid syntax');
+
+    if (!args[2])
+        conn.privmsg(command.options.channel, sanitizeNick(command.options.nick) + ': with whom?');
+
+    if (lunches[time])
+        lunches[time].signup(command.options.nick, args[2]);
 }
 };
 
@@ -106,6 +126,7 @@ var dispatcher = cmd.use({
     'ask': commands.ask,
     'lunch': commands.lunch,
     'lunches': commands.lunches,
+    'signup': commands.signup,
     _unhandled: function(cmd) {
         console.log("don't understand", cmd);
     }
