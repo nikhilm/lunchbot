@@ -1,8 +1,8 @@
 Lunchbot
 ========
 
-When I was interning at Mozilla in the summer of 2011, there were about 40 interns
-spread over 3 floors of the office. We often wanted different types of lunch at different
+At Mozilla, we have about 30 interns
+spread over 3 floors of the office. We often want different types of lunch at different
 times, but there was no easy way to co-ordinate this on IRC. Lunchbot tries to solve
 this problem.
 
