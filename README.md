@@ -30,9 +30,9 @@ or exclusion.
 eg. lunch at 12:30 at Le Boulanger
 
 Options:
-
-* +invite <names> - automatically ping all <names> (space separated nicks) at that time
-* +exclusive - no one else can sign up for this lunch and it won't show up when anyone not in +invite runs command (5)
+[NOT implemented, needs some thinking]
+* --invite=<names> - automatically ping all <names> (space separated nicks) at that time
+* --exclusive - no one else can sign up for this lunch and it won't show up when anyone not in --invite runs command (5)
 
 5) view lunch times
 - lunches
