@@ -52,7 +52,7 @@ var onConnect = function() {
     conn.join(CHAN);
     conn.on('privmsg', function(args) {
         var message = args['params'][1];
-        var regex = /lunchbot[:]?\s*/;
+        var regex = new RegExp(NICK + "[:]?\\s*");
         if (message.match(regex)) {
             var arr = message.replace(regex, '').split(' ');
             dispatcher.apply(dispatcher, arr);
