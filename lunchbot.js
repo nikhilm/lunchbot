@@ -19,13 +19,18 @@ var LunchTime = function(time) {
 }
 
 LunchTime.prototype.add = function(by, message) {
-    this._list.push({by: by, message: message});
+    this._list.push({by: by, message: message, signups: []});
 }
 
 LunchTime.prototype.signup = function(with_) {
 }
 
 LunchTime.prototype.notify = function() {
+    for (var i = 0; i < this._list.length; i++) {
+        var obj = this._list[i];
+        var msg = obj.signups.concat([obj.by]).join(', ') + ': you have a lunch at ' + this._time + ' which is NOW (' + obj.message + ')';
+        conn.privmsg(CHAN, msg);
+    }
 }
 
 LunchTime.prototype.toString = function() {
@@ -54,7 +59,6 @@ ask: cmd.use({
         conn.names(CHAN, function(channel, nicks) {
             var ops = [];
             for (var i = 0; i < nicks.length; i++) {
-            console.log(nicks[i]);
                 if (nicks[i].indexOf('@') == 0)
                     ops.push(nicks[i]);
             }
@@ -110,7 +114,6 @@ var dispatcher = cmd.use({
 var onConnect = function() {
     conn.join(CHAN);
     conn.on('privmsg', function(args) {
-            console.dir(args);
         var message = args['params'][1];
         var regex = new RegExp(NICK + "[:]?\\s*");
         if (message.match(regex)) {
@@ -122,7 +125,22 @@ var onConnect = function() {
     });
 }
 
+var notifier = function() {
+    var d = new Date();
+    var h = d.getHours() < 10 ? "0" + d.getHours() : "" + d.getHours();
+    var m = d.getMinutes() < 10 ? "0" + d.getMinutes() : "" + d.getMinutes();
+    var t = h + ":" + m;
+
+    for (var i in lunches) {
+        if (i == t) {
+            lunches[i].notify();
+        }
+    }
+}
+
 conn.connect(function() {
     console.log('Connected');
     setTimeout(onConnect, 1000);
+    // lunches checker
+    setInterval(notifier, 60 * 1000);
 });
