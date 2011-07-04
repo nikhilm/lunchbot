@@ -1,0 +1,18 @@
+{
+  "name": "lunchbot",
+  "description": "A easy way to coordinate lunch on IRC",
+  "version": "0.1.0",
+  "author": "Nikhil Marathe <me@nikhilmarathe.me> (http://nikhilmarathe.me)",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/nikhilm/lunchbot.git"
+  },
+  "main": "lunchbot.js",
+  "engines": {
+    "node": ">=0.4.8"
+  },
+  "dependencies": {
+  	  "irc-js": "",
+  	  "cmd": "*"
+  }
+}
