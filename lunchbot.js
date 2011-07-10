@@ -7,44 +7,12 @@
 var irc = require('IRC-js');
 var cmd = require('cmd');
 
-var SERV = 'localhost';
+var SERV = 'irc.mozilla.org';
+//var SERV = 'localhost';
 var NICK = 'lunchbot';
-var CHAN = '#lunchbot';
+var CHAN = '#interns';
 
 var conn = new irc({ 'server': SERV, 'nick': NICK });
-
-var LunchTime = function(time) {
-    this._time = time;
-    this._list = [];
-}
-
-LunchTime.prototype.add = function(by, message) {
-    this._list.push({by: by, message: message, signups: []});
-}
-
-LunchTime.prototype.signup = function(nick, with_) {
-    for (var i = 0; i < this._list.length; i++) {
-        if (this._list[i].by == with_)
-            this._list[i].signups.push(nick);
-    }
-}
-
-LunchTime.prototype.notify = function() {
-    for (var i = 0; i < this._list.length; i++) {
-        var obj = this._list[i];
-        var msg = obj.signups.concat([obj.by]).join(', ') + ': you have a lunch at ' + this._time + ' which is NOW (' + obj.message + ')';
-        conn.privmsg(CHAN, msg);
-    }
-}
-
-LunchTime.prototype.toString = function() {
-    var str = '';
-    for (var i = 0; i < this._list.length; i++)
-        str += this._time + ' ' + this._list[i].by + ': ' + this._list[i].message + '\n';
-    return str;
-}
-
-var lunches = {};
 
 var sanitizeNick = function(nick) {
     return nick.replace(/^[%@]/, '');
@@ -57,76 +25,65 @@ var sanitizeNickList = function(nicks) {
     return clean;
 }
 
+var getOperators = function(nicks) {
+    return nicks
+           .filter(function(nick) { return nick[0] == '@' })
+           .map(sanitizeNick);
+}
+
+var whiteList = [];
+var blackList = [];
+// returns true if success
+// false if already on that list
+var editLists = function(nick, addTo, removeFrom) {
+    var nick = sanitizeNick(nick);
+    if (addTo.indexOf(nick) == -1) {
+        addTo.push(nick);
+    } else {
+        return false;
+    }
+    var index = removeFrom.indexOf(nick);
+    if (index != -1)
+        removeFrom.splice(index, 1);
+    return true;
+}
+
 var commands = {
-ask: cmd.use({
-    'ops': function() {
-        conn.names(CHAN, function(channel, nicks) {
-            var ops = [];
-            for (var i = 0; i < nicks.length; i++) {
-                if (nicks[i].indexOf('@') == 0)
-                    ops.push(nicks[i]);
-            }
-
-            if (ops.length == 0)
-                return;
-
-            conn.privmsg(CHAN, sanitizeNickList(ops).join(', ') + ': lunch?');
-        });
-    },
-    _unhandled: function() {
-        conn.names(CHAN, function(channel, nicks) {
-            conn.privmsg(CHAN, sanitizeNickList(nicks).join(', ') + ': lunch?');
-        });
-    }
-}),
-
-lunch: cmd.use({
-    'at': function(command) {
-        var args = command.unshifted();
-        var time = args[0];
-        var match = time.match(/^(0?[0-9]|1[0-9]|2[0-3]):(0[0-9]|[1-5][0-9])$/);
-        if (!match)
-            conn.privmsg(command.options.channel, sanitizeNick(command.options.nick) + ': invalid time');
-
-        if (!lunches[time])
-            lunches[time] = new LunchTime(time);
-        lunches[time].add(command.options.nick, args.slice(1).join(' '));
-    }
-}),
-
-lunches: function(command) {
-    var lunchesStr = '';
-    for (var time in lunches) {
-        if (!lunches.hasOwnProperty(time))
-            continue;
-        var lunchtime = lunches[time];
-        lunchesStr += lunchtime;
-    }
-    conn.privmsg(command.options.channel, lunchesStr);
+spam: function(command) {
+          console.log("CALLED");
+    conn.names(CHAN, function(channel, nicks) {
+        var ops = getOperators(nicks);
+        var list = ops.filter(function(nick) { return ops.indexOf(nick) == -1; })
+                    .concat(whiteList.filter(function(nick) { return ops.indexOf(nick) == -1; }));
+        if (list.length != 0)
+            conn.privmsg(command.options.channel, list.join(', ') + ': lunch?');
+    });
 },
 
-signup: function(command) {
-    var args = command.unshifted();
-    var time = args[0];
-    var match = time.match(/^(0?[0-9]|1[0-9]|2[0-3]):(0[0-9]|[1-5][0-9])$/);
-    if (!match)
-        conn.privmsg(command.options.channel, sanitizeNick(command.options.nick) + ': invalid time');
-    if (!(args[1] == 'with'))
-        conn.privmsg(command.options.channel, sanitizeNick(command.options.nick) + ': invalid syntax');
+whitelist: function(command) {
+    if (editLists(command.options.nick, whiteList, blackList))
+        conn.privmsg(command.options.channel, command.options.nick + ': ' + 'added to whitelist');
+    else
+        conn.privmsg(command.options.channel, command.options.nick + ': ' + 'already on whitelist');
+},
 
-    if (!args[2])
-        conn.privmsg(command.options.channel, sanitizeNick(command.options.nick) + ': with whom?');
+blacklist: function(command) {
+    if (editLists(command.options.nick, blackList, whiteList))
+        conn.privmsg(command.options.channel, command.options.nick + ': ' + 'added to blacklist');
+    else
+        conn.privmsg(command.options.channel, command.options.nick + ': ' + 'already on blacklist');
+},
 
-    if (lunches[time])
-        lunches[time].signup(command.options.nick, args[2]);
+hadlunch: function(command) {
+    // TODO
 }
 };
 
 var dispatcher = cmd.use({
-    'ask': commands.ask,
-    'lunch': commands.lunch,
-    'lunches': commands.lunches,
-    'signup': commands.signup,
+    'spam': commands.spam,
+    'whitelist': commands.whitelist,
+    'blacklist': commands.blacklist,
+    'i': commands.hadlunch,
     _unhandled: function(cmd) {
         console.log("don't understand", cmd);
     }
@@ -146,22 +103,12 @@ var onConnect = function() {
     });
 }
 
-var notifier = function() {
-    var d = new Date();
-    var h = d.getHours() < 10 ? "0" + d.getHours() : "" + d.getHours();
-    var m = d.getMinutes() < 10 ? "0" + d.getMinutes() : "" + d.getMinutes();
-    var t = h + ":" + m;
-
-    for (var i in lunches) {
-        if (i == t) {
-            lunches[i].notify();
-        }
-    }
-}
-
 conn.connect(function() {
     console.log('Connected');
     setTimeout(onConnect, 1000);
-    // lunches checker
-    setInterval(notifier, 60 * 1000);
+});
+
+process.on('SIGINT', function () {
+    saveLists();
+    console.log('Got SIGINT.  Press Control-D to exit.');
 });
