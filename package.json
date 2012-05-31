@@ -2,7 +2,7 @@
   "name": "lunchbot",
   "description": "A easy way to coordinate lunch on IRC",
   "version": "0.1.0",
-  "author": "Nikhil Marathe <me@nikhilmarathe.me> (http://nikhilmarathe.me)",
+  "author": "Nikhil Marathe <nsm.nikhil@gmail.com> (http://nikhilism.com)",
   "repository": {
     "type": "git",
     "url": "git://github.com/nikhilm/lunchbot.git"
